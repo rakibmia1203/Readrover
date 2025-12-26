@@ -1,0 +1,115 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Theme system
+  - Driven by data-theme on <html>
+  - Each theme sets accent colors used by gradients + focus rings
+*/
+:root {
+  color-scheme: light;
+
+  /* Default theme (Sunset) */
+  --accent-1: #e11d48;
+  --accent-2: #6d28d9;
+  --accent-3: #0891b2;
+
+  /* RGB triples (space-separated) for arbitrary Tailwind values */
+  --accent-solid: 109 40 217; /* deep violet */
+  --ring: 109 40 217;
+  --surface: 255 255 255;
+  --border: 226 232 240;
+  --text: 15 23 42;
+  --muted: 100 116 139;
+}
+
+html[data-theme="sunset"] {
+  color-scheme: light;
+  --accent-1: #e11d48;
+  --accent-2: #6d28d9;
+  --accent-3: #0891b2;
+  --accent-solid: 109 40 217;
+  --ring: 109 40 217;
+}
+
+html[data-theme="tropical"] {
+  color-scheme: light;
+  --accent-1: #15803d;
+  --accent-2: #0e7490;
+  --accent-3: #c2410c;
+  --accent-solid: 14 116 144;
+  --ring: 14 116 144;
+}
+
+html[data-theme="candy"] {
+  color-scheme: light;
+  --accent-1: #be123c;
+  --accent-2: #6d28d9;
+  --accent-3: #166534;
+  --accent-solid: 109 40 217;
+  --ring: 109 40 217;
+}
+
+html[data-theme="aurora"] {
+  color-scheme: light;
+  --accent-1: #0f766e;
+  --accent-2: #166534;
+  --accent-3: #b45309;
+  --accent-solid: 15 118 110;
+  --ring: 15 118 110;
+}
+
+html, body { height: 100%; }
+
+body {
+  @apply antialiased;
+  color: rgb(var(--text));
+
+  /* Colorful, premium background that adapts to theme accent vars */
+  background:
+    radial-gradient(1100px circle at 12% 8%, color-mix(in srgb, var(--accent-1) 26%, transparent), transparent 42%),
+    radial-gradient(900px circle at 88% 12%, color-mix(in srgb, var(--accent-2) 24%, transparent), transparent 45%),
+    radial-gradient(900px circle at 52% 105%, color-mix(in srgb, var(--accent-3) 22%, transparent), transparent 45%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, rgb(var(--surface)) 92%, #ffffff),
+      color-mix(in srgb, rgb(var(--surface)) 82%, #f1f5ff)
+    );
+}
+
+.container { @apply mx-auto max-w-6xl px-4; }
+::selection { background: color-mix(in srgb, var(--accent-2) 72%, #000); color: #fff; }
+
+
+/* Subtle premium animations */
+@keyframes floaty {
+  0% { transform: translate(0,0); }
+  50% { transform: translate(10px,-10px); }
+  100% { transform: translate(0,0); }
+}
+@keyframes floatyFast {
+  0% { transform: translate(0,0); }
+  50% { transform: translate(-12px,8px); }
+  100% { transform: translate(0,0); }
+}
+@keyframes floatySlow {
+  0% { transform: translate(0,0); }
+  50% { transform: translate(14px,12px); }
+  100% { transform: translate(0,0); }
+}
+
+.animate-float { animation: floaty 7s ease-in-out infinite; }
+.animate-floatFast { animation: floatyFast 5.5s ease-in-out infinite; }
+.animate-floatSlow { animation: floatySlow 9s ease-in-out infinite; }
+
+/* Button shine */
+.btn-shine {
+  position: absolute;
+  inset: 0;
+  transform: translateX(-120%);
+  background: linear-gradient(110deg, transparent 0%, rgba(255,255,255,.55) 45%, transparent 70%);
+  transition: transform .6s ease;
+  pointer-events: none;
+}
+button:hover .btn-shine, a:hover .btn-shine { transform: translateX(120%); }

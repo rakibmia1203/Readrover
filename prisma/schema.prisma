@@ -1,0 +1,167 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("USER")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  addresses    Address[]
+  orders       Order[]
+  reviews      Review[]
+  watchlist    WatchlistItem[]
+  contactMessages ContactMessage[]
+}
+
+model Address {
+  id        String   @id @default(cuid())
+  userId    String
+  label     String?
+  phone     String
+  address   String
+  city      String?
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+}
+
+model Coupon {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  type        String   // PERCENT | FIXED
+  value       Int
+  minSubtotal Int      @default(0)
+  maxDiscount Int?
+  active      Boolean  @default(true)
+  startsAt    DateTime?
+  endsAt      DateTime?
+  usageLimit  Int?
+  usedCount   Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+model Book {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  author      String
+  publisher   String?
+  language    String   @default("Bangla")
+  category    String
+  tags        String
+  description String
+  price       Int
+  salePrice   Int?
+  stock       Int      @default(0)
+  coverUrl    String?
+  ratingAvg   Float    @default(0)
+  ratingCount Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  reviews     Review[]
+  watchlist   WatchlistItem[]
+  orderItems  OrderItem[]
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  bookId    String
+  userId    String?
+  name      String
+  rating    Int
+  comment   String
+  createdAt DateTime @default(now())
+
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  @@index([bookId])
+  @@index([userId])
+}
+
+model Order {
+  id             String   @id @default(cuid())
+  orderNo         String   @unique
+  userId          String?
+  name            String
+  email           String?
+  phone           String
+  address         String
+  note            String?
+  status          String   @default("PENDING")
+  couponCode      String?
+  couponDiscount  Int      @default(0)
+  subtotal        Int
+  deliveryFee     Int
+  total           Int
+  createdAt       DateTime @default(now())
+
+  user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items           OrderItem[]
+  @@index([userId])
+}
+
+model OrderItem {
+  id        String @id @default(cuid())
+  orderId   String
+  bookId    String
+  qty       Int
+  unitPrice Int
+
+  order     Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  book      Book   @relation(fields: [bookId], references: [id], onDelete: Restrict)
+  @@index([orderId])
+  @@index([bookId])
+}
+
+model WatchlistItem {
+  id        String   @id @default(cuid())
+  userId    String?
+  email     String
+  bookId    String
+  createdAt DateTime @default(now())
+
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  @@unique([email, bookId])
+  @@index([bookId])
+  @@index([userId])
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  source    String?
+  createdAt DateTime @default(now())
+}
+
+model ContactMessage {
+  id         String   @id @default(cuid())
+  userId     String?
+  name       String
+  email      String
+  subject    String
+  message    String
+  status     String   @default("NEW") // NEW | IN_PROGRESS | RESOLVED
+  createdAt  DateTime @default(now())
+  resolvedAt DateTime?
+
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([status, createdAt])
+  @@index([createdAt])
+}
