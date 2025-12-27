@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import { prisma } from "@/lib/prisma";
 import { readSession } from "@/lib/auth";
 import { formatBDT } from "@/lib/utils";
@@ -19,9 +20,9 @@ export default async function BookDetailsPage({ params }: { params: { slug: stri
   const tags = book.tags.split(",").map((t) => t.trim()).filter(Boolean);
 
   const related = await prisma.book.findMany({
-    where: { active: true, id: { not: book.id }, OR: tags.slice(0,2).map((t) => ({ tags: { contains: t } })) },
+    where: { active: true, id: { not: book.id }, OR: tags.slice(0, 2).map((t) => ({ tags: { contains: t } })) },
     take: 4,
-    select: { id:true, slug:true, title:true, author:true, price:true, salePrice:true },
+    select: { id: true, slug: true, title: true, author: true, price: true, salePrice: true },
   });
 
   return (
@@ -38,7 +39,11 @@ export default async function BookDetailsPage({ params }: { params: { slug: stri
         <Card>
           <CardContent className="pt-6">
             <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-slate-100">
-              <img src={book.coverUrl ?? "https://placehold.co/600x800?text=Cover"} alt={book.title} className="h-full w-full object-cover" />
+              <img
+                src={book.coverUrl ?? "https://placehold.co/600x800?text=Cover"}
+                alt={book.title}
+                className="h-full w-full object-cover"
+              />
               <div className="absolute left-3 top-3 flex gap-2">
                 <Badge tone="indigo">{book.language}</Badge>
                 <Badge tone="pink">{book.category}</Badge>
@@ -63,15 +68,21 @@ export default async function BookDetailsPage({ params }: { params: { slug: stri
                   <>
                     <input type="hidden" name="email" value={s.email} />
                     <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-700">
-                      Logged in as <b>{s.email}</b>. We'll use this email for price-drop alerts.
+                      Logged in as <b>{s.email}</b>. We&apos;ll use this email for price-drop alerts.
                       <div className="mt-2 text-xs text-slate-500">
-                        View saved items in <Link href="/watchlist" className="font-semibold hover:opacity-80">Watchlist</Link>.
+                        View saved items in{" "}
+                        <Link href="/watchlist" className="font-semibold hover:opacity-80">Watchlist</Link>.
                       </div>
                     </div>
                   </>
                 ) : (
-                  <input name="email" type="email" required placeholder="Email for price-drop alert"
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-200" />
+                  <input
+                    name="email"
+                    type="email"
+                    required
+                    placeholder="Email for price-drop alert"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-200"
+                  />
                 )}
                 <Button variant="secondary" className="w-full">Watch this book</Button>
                 <div className="text-[11px] text-slate-500">We store your watchlist entry now. You can view it in Watchlist.</div>
@@ -89,7 +100,11 @@ export default async function BookDetailsPage({ params }: { params: { slug: stri
 
               <div className="mt-4 flex flex-wrap gap-2">
                 {tags.map((t) => (
-                  <Link key={t} href={`/books?q=${encodeURIComponent(t)}`} className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs hover:bg-slate-50">
+                  <Link
+                    key={t}
+                    href={`/books?q=${encodeURIComponent(t)}`}
+                    className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs hover:bg-slate-50"
+                  >
                     {t}
                   </Link>
                 ))}
@@ -117,16 +132,20 @@ export default async function BookDetailsPage({ params }: { params: { slug: stri
               </form>
 
               <div className="mt-4 space-y-3">
-                {book.reviews.length === 0 ? <div className="text-sm text-slate-600">No reviews yet.</div> : book.reviews.map((r) => (
-                  <div key={r.id} className="rounded-2xl bg-slate-50 p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="text-sm font-semibold">{r.name}</div>
-                      <div className="text-sm">⭐ {r.rating}</div>
+                {book.reviews.length === 0 ? (
+                  <div className="text-sm text-slate-600">No reviews yet.</div>
+                ) : (
+                  book.reviews.map((r) => (
+                    <div key={r.id} className="rounded-2xl bg-slate-50 p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm font-semibold">{r.name}</div>
+                        <div className="text-sm">⭐ {r.rating}</div>
+                      </div>
+                      <div className="mt-1 text-sm text-slate-700">{r.comment}</div>
+                      <div className="mt-1 text-xs text-slate-500">{new Date(r.createdAt).toLocaleString()}</div>
                     </div>
-                    <div className="mt-1 text-sm text-slate-700">{r.comment}</div>
-                    <div className="mt-1 text-xs text-slate-500">{new Date(r.createdAt).toLocaleString()}</div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
@@ -138,6 +157,7 @@ export default async function BookDetailsPage({ params }: { params: { slug: stri
           <h2 className="text-lg font-semibold">Related books</h2>
           <Link href="/books" className="text-sm text-slate-600 hover:opacity-80">Browse all →</Link>
         </div>
+
         {related.length === 0 ? (
           <div className="rounded-2xl border border-slate-200/70 bg-white/80 p-6 text-sm text-slate-600">No related books found.</div>
         ) : (
