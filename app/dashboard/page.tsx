@@ -1,11 +1,12 @@
+/* eslint-disable react/no-unescaped-entities */
 "use client";
-
-const RECENT_KEY = "readrover_recent_orders_v1";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Badge, Button, Card, CardContent, Input } from "@/components/ui";
 import { formatBDT } from "@/lib/utils";
+
+const RECENT_KEY = "readrover_recent_orders_v1";
 
 type MyOrder = { orderNo: string; phone: string; name: string; createdAt: number };
 
@@ -15,7 +16,9 @@ function loadLocalOrders(): MyOrder[] {
     const raw = window.localStorage.getItem("readrover_my_orders_v1");
     const arr = raw ? JSON.parse(raw) : [];
     return Array.isArray(arr) ? arr : [];
-  } catch { return []; }
+  } catch {
+    return [];
+  }
 }
 
 export default function DashboardPage() {
@@ -39,6 +42,7 @@ export default function DashboardPage() {
       .then((r) => r.json())
       .then((j) => setMe(j.user || null))
       .catch(() => {});
+
     try {
       const raw = window.localStorage.getItem(RECENT_KEY);
       const arr: string[] = raw ? JSON.parse(raw) : [];
@@ -56,10 +60,8 @@ export default function DashboardPage() {
         setEmail(j.user.email || "");
 
         try {
-          const [oRes, wRes] = await Promise.all([
-            fetch("/api/orders/by-user"),
-            fetch("/api/watchlist/list"),
-          ]);
+          const [oRes, wRes] = await Promise.all([fetch("/api/orders/by-user"), fetch("/api/watchlist/list")]);
+
           if (oRes.ok) {
             const oJ = await oRes.json();
             setMyOrders(oJ.orders || []);
@@ -77,6 +79,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!me) return;
+
     // Load orders + watchlist from DB
     (async () => {
       try {
@@ -84,6 +87,7 @@ export default function DashboardPage() {
         const j = await res.json();
         if (res.ok) setRemoteOrders(j.orders || []);
       } catch {}
+
       try {
         const res = await fetch("/api/watchlist/list");
         const j = await res.json();
@@ -102,7 +106,9 @@ export default function DashboardPage() {
     setLookupMsg(null);
     setRemoteOrders(null);
     try {
-      const res = await fetch(`/api/orders/by-phone?phone=${encodeURIComponent(phone)}&name=${encodeURIComponent(name)}`);
+      const res = await fetch(
+        `/api/orders/by-phone?phone=${encodeURIComponent(phone)}&name=${encodeURIComponent(name)}`
+      );
       const j = await res.json();
       if (!res.ok) throw new Error(j?.error || "Failed");
       setRemoteOrders(j.orders || []);
@@ -142,16 +148,24 @@ export default function DashboardPage() {
             <div className="flex items-end justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold">Your recent orders</h2>
-                <p className="mt-1 text-sm text-slate-600">If you're signed in, we show DB-backed orders. Otherwise we show locally saved orders (this browser only).</p>
+                <p className="mt-1 text-sm text-slate-600">
+                  If you&apos;re signed in, we show DB-backed orders. Otherwise we show locally saved orders (this browser
+                  only).
+                </p>
               </div>
-              <Link href="/track-order" className="text-sm font-semibold hover:opacity-80">Track manually →</Link>
+              <Link href="/track-order" className="text-sm font-semibold hover:opacity-80">
+                Track manually →
+              </Link>
             </div>
 
             {me && myOrders ? (
               myOrders.length ? (
                 <div className="space-y-3">
                   {myOrders.map((o) => (
-                    <div key={o.id} className="flex flex-col gap-2 rounded-2xl border border-slate-200/70 bg-white/80 p-4 md:flex-row md:items-center md:justify-between">
+                    <div
+                      key={o.id}
+                      className="flex flex-col gap-2 rounded-2xl border border-slate-200/70 bg-white/80 p-4 md:flex-row md:items-center md:justify-between"
+                    >
                       <div>
                         <div className="text-sm font-semibold">{o.orderNo}</div>
                         <div className="mt-1 text-xs text-slate-500">{new Date(o.createdAt).toLocaleString()}</div>
@@ -161,7 +175,11 @@ export default function DashboardPage() {
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <Link href={`/track-order?orderNo=${encodeURIComponent(o.orderNo)}&phone=${encodeURIComponent(o.phone)}`}>
+                        <Link
+                          href={`/track-order?orderNo=${encodeURIComponent(o.orderNo)}&phone=${encodeURIComponent(
+                            o.phone
+                          )}`}
+                        >
                           <Button>Track</Button>
                         </Link>
                       </div>
@@ -182,23 +200,34 @@ export default function DashboardPage() {
             ) : (
               <div className="space-y-3">
                 {merged.map((o) => (
-                  <div key={o.orderNo} className="flex flex-col gap-2 rounded-2xl border border-slate-200/70 bg-white/80 p-4 md:flex-row md:items-center md:justify-between">
+                  <div
+                    key={o.orderNo}
+                    className="flex flex-col gap-2 rounded-2xl border border-slate-200/70 bg-white/80 p-4 md:flex-row md:items-center md:justify-between"
+                  >
                     <div>
                       <div className="text-sm font-semibold">{o.orderNo}</div>
                       <div className="mt-1 text-xs text-slate-500">{new Date(o.createdAt).toLocaleString()}</div>
-                      <div className="mt-1 text-sm text-slate-600">{o.name} • {o.phone}</div>
+                      <div className="mt-1 text-sm text-slate-600">
+                        {o.name} • {o.phone}
+                      </div>
                     </div>
                     <div className="flex gap-2">
                       <Link href={`/track-order?orderNo=${encodeURIComponent(o.orderNo)}&phone=${encodeURIComponent(o.phone)}`}>
                         <Button>Track</Button>
                       </Link>
-                      <Button variant="secondary" type="button" onClick={() => {
-                        try {
-                          const next = merged.filter(x => x.orderNo !== o.orderNo);
-                          window.localStorage.setItem("readrover_my_orders_v1", JSON.stringify(next));
-                          setLocalOrders(next);
-                        } catch {}
-                      }}>Remove</Button>
+                      <Button
+                        variant="secondary"
+                        type="button"
+                        onClick={() => {
+                          try {
+                            const next = merged.filter((x) => x.orderNo !== o.orderNo);
+                            window.localStorage.setItem("readrover_my_orders_v1", JSON.stringify(next));
+                            setLocalOrders(next);
+                          } catch {}
+                        }}
+                      >
+                        Remove
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -208,33 +237,39 @@ export default function DashboardPage() {
             {!me ? (
               <div className="rounded-2xl bg-slate-50 p-4">
                 <div className="text-sm font-semibold">Recover orders (name + phone)</div>
-              <div className="mt-2 grid gap-2 md:grid-cols-3">
-                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name used in checkout" />
-                <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone used in checkout" />
-                <Button onClick={lookupOrders} disabled={!name || !phone}>Find orders</Button>
-              </div>
-              {lookupMsg ? <div className="mt-2 text-sm text-rose-600">{lookupMsg}</div> : null}
-
-              {remoteOrders ? (
-                <div className="mt-4 space-y-2">
-                  {remoteOrders.map((o) => (
-                    <div key={o.orderNo} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-slate-200/70 bg-white/80 p-4">
-                      <div>
-                        <div className="text-sm font-semibold">{o.orderNo}</div>
-                        <div className="mt-1 text-xs text-slate-500">{new Date(o.createdAt).toLocaleString()}</div>
-                        <div className="mt-1 flex flex-wrap gap-2">
-                          <Badge tone="indigo">Status: {o.status}</Badge>
-                          <Badge tone="pink">Total: {formatBDT(o.total)}</Badge>
-                        </div>
-                      </div>
-                      <Link href={`/track-order?orderNo=${encodeURIComponent(o.orderNo)}&phone=${encodeURIComponent(phone)}`}>
-                        <Button>Open</Button>
-                      </Link>
-                    </div>
-                  ))}
+                <div className="mt-2 grid gap-2 md:grid-cols-3">
+                  <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name used in checkout" />
+                  <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone used in checkout" />
+                  <Button onClick={lookupOrders} disabled={!name || !phone}>
+                    Find orders
+                  </Button>
                 </div>
-              ) : null}
-            </div>
+
+                {lookupMsg ? <div className="mt-2 text-sm text-rose-600">{lookupMsg}</div> : null}
+
+                {remoteOrders ? (
+                  <div className="mt-4 space-y-2">
+                    {remoteOrders.map((o) => (
+                      <div
+                        key={o.orderNo}
+                        className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-slate-200/70 bg-white/80 p-4"
+                      >
+                        <div>
+                          <div className="text-sm font-semibold">{o.orderNo}</div>
+                          <div className="mt-1 text-xs text-slate-500">{new Date(o.createdAt).toLocaleString()}</div>
+                          <div className="mt-1 flex flex-wrap gap-2">
+                            <Badge tone="indigo">Status: {o.status}</Badge>
+                            <Badge tone="pink">Total: {formatBDT(o.total)}</Badge>
+                          </div>
+                        </div>
+                        <Link href={`/track-order?orderNo=${encodeURIComponent(o.orderNo)}&phone=${encodeURIComponent(phone)}`}>
+                          <Button>Open</Button>
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
             ) : null}
           </CardContent>
         </Card>
@@ -243,21 +278,31 @@ export default function DashboardPage() {
           <CardContent className="pt-6 space-y-4">
             <h2 className="text-lg font-semibold">Watchlist</h2>
             <p className="text-sm text-slate-600">See books you subscribed for price-drop alerts.</p>
+
             {!me ? (
               <>
                 <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email used in watchlist" />
-                <Button variant="secondary" onClick={loadWatchlist} disabled={!email}>Load watchlist</Button>
+                <Button variant="secondary" onClick={loadWatchlist} disabled={!email}>
+                  Load watchlist
+                </Button>
               </>
             ) : (
-              <Link href="/watchlist"><Button variant="secondary">Open watchlist</Button></Link>
+              <Link href="/watchlist">
+                <Button variant="secondary">Open watchlist</Button>
+              </Link>
             )}
+
             {watchMsg ? <div className="text-sm text-rose-600">{watchMsg}</div> : null}
 
             {watchItems ? (
               watchItems.length === 0 ? null : (
                 <div className="space-y-2">
                   {watchItems.map((it) => (
-                    <Link key={it.id} href={`/books/${it.book.slug}`} className="block rounded-2xl border border-slate-200/70 bg-white/80 p-3 hover:shadow-md transition">
+                    <Link
+                      key={it.id}
+                      href={`/books/${it.book.slug}`}
+                      className="block rounded-2xl border border-slate-200/70 bg-white/80 p-3 hover:shadow-md transition"
+                    >
                       <div className="text-sm font-semibold line-clamp-2">{it.book.title}</div>
                       <div className="mt-1 text-sm text-slate-600">{formatBDT(it.book.salePrice ?? it.book.price)}</div>
                       <div className="mt-1 text-xs text-slate-500">Saved: {new Date(it.createdAt).toLocaleDateString()}</div>
